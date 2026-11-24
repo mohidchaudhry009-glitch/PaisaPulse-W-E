@@ -64,26 +64,26 @@ export function Login() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col justify-between bg-[#090D16] px-4 py-8 text-slate-100">
+    <div className="flex min-h-screen flex-col justify-between bg-slate-50 px-4 py-8 text-slate-900">
       <div className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center">
         <div className="mb-8">
-          <Link to="/login" className="font-display text-2xl font-bold tracking-tight text-white">
+          <Link to="/login" className="font-display text-2xl font-bold tracking-tight text-slate-900">
             PaisaPulse
           </Link>
-          <p className="mt-2 text-sm text-slate-400">
+          <p className="mt-2 text-sm text-slate-600">
             Sign in to your account to watch ads, track daily milestones, and request payouts.
           </p>
         </div>
 
         <SupabaseConfigBanner />
 
-        <div className="rounded-xl border border-slate-800 bg-[#111827] p-6 sm:p-8">
-          <h1 className="font-display text-xl font-semibold text-white">Sign in</h1>
+        <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-xs sm:p-8">
+          <h1 className="font-display text-xl font-semibold text-slate-900">Sign in</h1>
 
           {errorMessage && (
             <div
               role="alert"
-              className="mt-4 rounded-lg border border-red-500/30 bg-red-950/40 px-3.5 py-2.5 text-sm text-red-200"
+              className="mt-4 rounded-lg border border-red-200 bg-red-50 px-3.5 py-2.5 text-sm text-red-800"
             >
               {errorMessage}
             </div>
@@ -91,7 +91,7 @@ export function Login() {
 
           <form onSubmit={handleSubmit} className="mt-6 space-y-5" noValidate>
             <div className="space-y-1.5">
-              <label htmlFor="login-email" className="block text-sm font-medium text-slate-200">
+              <label htmlFor="login-email" className="block text-sm font-medium text-slate-800">
                 Email address
               </label>
               <input
@@ -102,12 +102,12 @@ export function Login() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@example.com"
-                className="w-full rounded-lg border border-slate-700 bg-[#090D16] px-3.5 py-2.5 text-sm text-slate-100 placeholder:text-slate-500 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                className="w-full rounded-lg border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-emerald-600 focus:outline-none focus:ring-1 focus:ring-emerald-600"
               />
             </div>
 
             <div className="space-y-1.5">
-              <label htmlFor="login-password" className="block text-sm font-medium text-slate-200">
+              <label htmlFor="login-password" className="block text-sm font-medium text-slate-800">
                 Password
               </label>
               <div className="relative">
@@ -119,13 +119,13 @@ export function Login() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Enter your password"
-                  className="w-full rounded-lg border border-slate-700 bg-[#090D16] py-2.5 pl-3.5 pr-10 text-sm text-slate-100 placeholder:text-slate-500 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                  className="w-full rounded-lg border border-slate-300 bg-white py-2.5 pl-3.5 pr-10 text-sm text-slate-900 placeholder:text-slate-400 focus:border-emerald-600 focus:outline-none focus:ring-1 focus:ring-emerald-600"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword((prev) => !prev)}
                   aria-label={showPassword ? 'Hide password' : 'Show password'}
-                  className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded p-1 text-slate-400 hover:text-slate-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded p-1 text-slate-400 hover:text-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600"
                 >
                   {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
@@ -135,16 +135,16 @@ export function Login() {
             <button
               type="submit"
               disabled={submitting}
-              className="flex w-full items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-emerald-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 disabled:cursor-not-allowed disabled:opacity-50"
+              className="flex w-full items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-emerald-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600 disabled:cursor-not-allowed disabled:opacity-50"
             >
               <LogIn className="h-4 w-4" aria-hidden="true" />
               <span>{submitting ? 'Signing in...' : 'Sign In'}</span>
             </button>
           </form>
 
-          <p className="mt-6 border-t border-slate-800 pt-5 text-center text-sm text-slate-400">
+          <p className="mt-6 border-t border-slate-200 pt-5 text-center text-sm text-slate-600">
             Don&apos;t have an account?{' '}
-            <Link to="/signup" className="font-medium text-emerald-400 hover:text-emerald-300">
+            <Link to="/signup" className="font-medium text-emerald-700 hover:text-emerald-600">
               Create account
             </Link>
           </p>
@@ -154,11 +154,11 @@ export function Login() {
       <footer className="mx-auto mt-8 flex w-full max-w-md items-center justify-between text-xs text-slate-500">
         <span>© {new Date().getFullYear()} PaisaPulse</span>
         <div className="flex items-center gap-3">
-          <Link to="/privacy" className="hover:text-slate-300">
+          <Link to="/privacy" className="hover:text-slate-800">
             Privacy Policy
           </Link>
           <span aria-hidden="true">·</span>
-          <Link to="/terms" className="hover:text-slate-300">
+          <Link to="/terms" className="hover:text-slate-800">
             Terms
           </Link>
         </div>

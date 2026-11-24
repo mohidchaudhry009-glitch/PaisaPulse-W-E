@@ -49,32 +49,36 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
             <div
               key={toast.id}
               role="status"
-              className={`pointer-events-auto flex items-start gap-3 rounded-lg border px-4 py-3 text-sm shadow-xl transition-all duration-150 ${
+              className={`pointer-events-auto flex items-start gap-3 rounded-lg border bg-white px-4 py-3 text-sm shadow-lg transition-all duration-150 ${
                 isSuccess
-                  ? 'border-emerald-500/30 bg-[#0F1A17] text-emerald-100'
+                  ? 'border-emerald-200 text-slate-900'
                   : isError
-                  ? 'border-red-500/30 bg-[#1B1014] text-red-100'
-                  : 'border-slate-700 bg-[#111827] text-slate-100'
+                  ? 'border-red-200 text-slate-900'
+                  : 'border-slate-200 text-slate-900'
               }`}
             >
               {isSuccess ? (
-                <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-400" aria-hidden="true" />
+                <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" aria-hidden="true" />
               ) : isError ? (
-                <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-red-400" aria-hidden="true" />
+                <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-red-600" aria-hidden="true" />
               ) : (
-                <Info className="mt-0.5 h-4 w-4 shrink-0 text-slate-400" aria-hidden="true" />
+                <Info className="mt-0.5 h-4 w-4 shrink-0 text-slate-500" aria-hidden="true" />
               )}
               <div className="min-w-0 flex-1">
-                <p className="text-xs font-semibold tracking-wide text-slate-300">
+                <p
+                  className={`text-xs font-semibold tracking-wide ${
+                    isSuccess ? 'text-emerald-700' : isError ? 'text-red-700' : 'text-slate-700'
+                  }`}
+                >
                   {isSuccess ? 'Success' : isError ? 'Error' : 'Notice'}
                 </p>
-                <p className="mt-0.5 text-sm leading-snug">{toast.message}</p>
+                <p className="mt-0.5 text-sm leading-snug text-slate-700">{toast.message}</p>
               </div>
               <button
                 type="button"
                 onClick={() => removeToast(toast.id)}
                 aria-label="Dismiss notification"
-                className="rounded p-1 text-slate-400 transition-colors hover:bg-white/5 hover:text-slate-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+                className="rounded p-1 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600"
               >
                 <X className="h-4 w-4" />
               </button>

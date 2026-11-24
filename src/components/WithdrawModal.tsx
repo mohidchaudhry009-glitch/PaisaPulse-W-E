@@ -80,7 +80,6 @@ export function WithdrawModal({ isOpen, onClose, onSuccess }: WithdrawModalProps
     try {
       const nextBalance = Number((currentBalance - numericAmount).toFixed(2));
 
-      // Guarded deduction ensures balance >= numericAmount at write time
       const { data: updatedProfile, error: balanceError } = await supabase
         .from('profiles')
         .update({ balance: nextBalance })
@@ -106,7 +105,6 @@ export function WithdrawModal({ isOpen, onClose, onSuccess }: WithdrawModalProps
       });
 
       if (insertError) {
-        // Attempt rollback of deducted balance if withdrawal row insertion failed
         await supabase
           .from('profiles')
           .update({ balance: currentBalance })
@@ -138,16 +136,16 @@ export function WithdrawModal({ isOpen, onClose, onSuccess }: WithdrawModalProps
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-xs"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4 backdrop-blur-xs"
       role="dialog"
       aria-modal="true"
       aria-labelledby="withdraw-modal-title"
     >
-      <div className="w-full max-w-md rounded-xl border border-slate-800 bg-[#111827] shadow-2xl">
-        <div className="flex items-center justify-between border-b border-slate-800 px-6 py-4">
+      <div className="w-full max-w-md rounded-xl border border-slate-200 bg-white shadow-xl">
+        <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4">
           <div className="flex items-center gap-2.5">
-            <Wallet className="h-4 w-4 text-emerald-400" aria-hidden="true" />
-            <h2 id="withdraw-modal-title" className="font-display text-base font-semibold text-slate-100">
+            <Wallet className="h-4 w-4 text-emerald-600" aria-hidden="true" />
+            <h2 id="withdraw-modal-title" className="font-display text-base font-semibold text-slate-900">
               Request Withdrawal
             </h2>
           </div>
@@ -155,16 +153,16 @@ export function WithdrawModal({ isOpen, onClose, onSuccess }: WithdrawModalProps
             type="button"
             onClick={onClose}
             aria-label="Close withdrawal modal"
-            className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-800 hover:text-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+            className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600"
           >
             <X className="h-4 w-4" />
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-5 p-6">
-          <div className="flex items-center justify-between border-b border-slate-800 pb-4">
-            <span className="text-sm text-slate-400">Available balance</span>
-            <span className="font-mono text-lg font-semibold tabular-nums text-emerald-400">
+          <div className="flex items-center justify-between border-b border-slate-200 pb-4">
+            <span className="text-sm text-slate-600">Available balance</span>
+            <span className="font-mono text-lg font-semibold tabular-nums text-emerald-700">
               Rs. {currentBalance.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}
             </span>
           </div>
@@ -172,7 +170,7 @@ export function WithdrawModal({ isOpen, onClose, onSuccess }: WithdrawModalProps
           {formError && (
             <div
               role="alert"
-              className="rounded-lg border border-red-500/30 bg-red-950/40 px-3.5 py-2.5 text-sm text-red-200"
+              className="rounded-lg border border-red-200 bg-red-50 px-3.5 py-2.5 text-sm text-red-800"
             >
               {formError}
             </div>
@@ -180,10 +178,10 @@ export function WithdrawModal({ isOpen, onClose, onSuccess }: WithdrawModalProps
 
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
-              <label htmlFor="withdraw-amount" className="text-sm font-medium text-slate-200">
+              <label htmlFor="withdraw-amount" className="text-sm font-medium text-slate-800">
                 Amount (PKR)
               </label>
-              <span className="text-xs text-slate-400">Minimum Rs. {MIN_WITHDRAWAL}</span>
+              <span className="text-xs text-slate-500">Minimum Rs. {MIN_WITHDRAWAL}</span>
             </div>
             <input
               id="withdraw-amount"
@@ -194,19 +192,19 @@ export function WithdrawModal({ isOpen, onClose, onSuccess }: WithdrawModalProps
               value={amountInput}
               onChange={(e) => setAmountInput(e.target.value)}
               placeholder="500"
-              className="w-full rounded-lg border border-slate-700 bg-[#090D16] px-3.5 py-2.5 font-mono text-sm tabular-nums text-slate-100 placeholder:text-slate-500 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+              className="w-full rounded-lg border border-slate-300 bg-white px-3.5 py-2.5 font-mono text-sm tabular-nums text-slate-900 placeholder:text-slate-400 focus:border-emerald-600 focus:outline-none focus:ring-1 focus:ring-emerald-600"
             />
           </div>
 
           <div className="space-y-1.5">
-            <label htmlFor="withdraw-method" className="text-sm font-medium text-slate-200">
+            <label htmlFor="withdraw-method" className="text-sm font-medium text-slate-800">
               Payment Method
             </label>
             <select
               id="withdraw-method"
               value={paymentMethod}
               onChange={(e) => setPaymentMethod(e.target.value as PaymentMethod)}
-              className="w-full rounded-lg border border-slate-700 bg-[#090D16] px-3.5 py-2.5 text-sm text-slate-100 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+              className="w-full rounded-lg border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 focus:border-emerald-600 focus:outline-none focus:ring-1 focus:ring-emerald-600"
             >
               <option value="JazzCash">JazzCash</option>
               <option value="Easypaisa">Easypaisa</option>
@@ -214,7 +212,7 @@ export function WithdrawModal({ isOpen, onClose, onSuccess }: WithdrawModalProps
           </div>
 
           <div className="space-y-1.5">
-            <label htmlFor="withdraw-account" className="text-sm font-medium text-slate-200">
+            <label htmlFor="withdraw-account" className="text-sm font-medium text-slate-800">
               Account Number
             </label>
             <input
@@ -224,26 +222,26 @@ export function WithdrawModal({ isOpen, onClose, onSuccess }: WithdrawModalProps
               value={accountNumber}
               onChange={(e) => setAccountNumber(e.target.value)}
               placeholder="03001234567"
-              className="w-full rounded-lg border border-slate-700 bg-[#090D16] px-3.5 py-2.5 font-mono text-sm tabular-nums text-slate-100 placeholder:text-slate-500 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+              className="w-full rounded-lg border border-slate-300 bg-white px-3.5 py-2.5 font-mono text-sm tabular-nums text-slate-900 placeholder:text-slate-400 focus:border-emerald-600 focus:outline-none focus:ring-1 focus:ring-emerald-600"
             />
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-slate-500">
               Enter your registered {paymentMethod} mobile wallet number.
             </p>
           </div>
 
-          <div className="flex items-center justify-end gap-3 border-t border-slate-800 pt-4">
+          <div className="flex items-center justify-end gap-3 border-t border-slate-200 pt-4">
             <button
               type="button"
               onClick={onClose}
               disabled={submitting}
-              className="rounded-lg border border-slate-700 px-4 py-2 text-sm font-medium text-slate-300 transition-colors hover:bg-slate-800 hover:text-white disabled:opacity-50"
+              className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 hover:text-slate-900 disabled:opacity-50"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={submitting || currentBalance < MIN_WITHDRAWAL}
-              className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-emerald-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 disabled:cursor-not-allowed disabled:opacity-50"
+              className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-emerald-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600 disabled:cursor-not-allowed disabled:opacity-50"
             >
               <span>{submitting ? 'Submitting...' : 'Confirm Withdrawal'}</span>
               <ArrowUpRight className="h-4 w-4" aria-hidden="true" />

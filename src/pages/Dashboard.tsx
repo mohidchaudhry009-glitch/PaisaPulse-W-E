@@ -211,12 +211,12 @@ export function Dashboard() {
       <SupabaseConfigBanner />
 
       {/* Top Header */}
-      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-800 pb-5">
+      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200 pb-5">
         <div>
-          <h1 className="font-display text-2xl font-bold tracking-tight text-white">
+          <h1 className="font-display text-2xl font-bold tracking-tight text-slate-900">
             Watch &amp; Earn Dashboard
           </h1>
-          <p className="mt-1 text-sm text-slate-400">
+          <p className="mt-1 text-sm text-slate-600">
             Complete 10 verified ad views to unlock Rs. {MILESTONE_REWARD_PKR} in your wallet.
           </p>
         </div>
@@ -224,9 +224,9 @@ export function Dashboard() {
         <button
           type="button"
           onClick={openWithdrawModal}
-          className="inline-flex items-center gap-2 rounded-lg border border-slate-700 bg-[#111827] px-4 py-2 text-sm font-semibold text-slate-100 transition-colors hover:border-emerald-500/40 hover:bg-slate-800 whitespace-nowrap shrink-0"
+          className="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-800 transition-colors hover:border-emerald-500 hover:bg-slate-50 whitespace-nowrap shrink-0"
         >
-          <Wallet className="h-4 w-4 text-emerald-400" aria-hidden="true" />
+          <Wallet className="h-4 w-4 text-emerald-600" aria-hidden="true" />
           <span>Withdraw Funds</span>
         </button>
       </div>
@@ -234,7 +234,7 @@ export function Dashboard() {
       {profileError && (
         <div
           role="alert"
-          className="rounded-xl border border-red-500/30 bg-red-950/40 px-4 py-3 text-sm text-red-200"
+          className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800"
         >
           Unable to load profile from Supabase: {profileError}
         </div>
@@ -244,13 +244,13 @@ export function Dashboard() {
       {showAdblockWarning ? (
         <div
           role="status"
-          className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-amber-500/30 bg-[#17130C] px-5 py-3.5 text-sm text-amber-100"
+          className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-amber-200 bg-amber-50 px-5 py-3.5 text-sm text-amber-950"
         >
           <div className="flex items-start gap-3">
-            <ShieldAlert className="mt-0.5 h-5 w-5 shrink-0 text-amber-400" aria-hidden="true" />
+            <ShieldAlert className="mt-0.5 h-5 w-5 shrink-0 text-amber-600" aria-hidden="true" />
             <div>
-              <p className="font-medium text-amber-200">Adblocker detected or simulated</p>
-              <p className="mt-0.5 text-xs text-amber-200/80">
+              <p className="font-medium text-amber-900">Adblocker detected or simulated</p>
+              <p className="mt-0.5 text-xs text-amber-800">
                 Please disable browser adblockers for PaisaPulse so Monetag ad impressions register properly.
               </p>
             </div>
@@ -260,7 +260,7 @@ export function Dashboard() {
               <button
                 type="button"
                 onClick={() => setMockAdblockWarning(false)}
-                className="rounded-lg border border-amber-500/30 px-3 py-1.5 text-xs font-medium text-amber-200 hover:bg-amber-500/10"
+                className="rounded-lg border border-amber-300 bg-white px-3 py-1.5 text-xs font-medium text-amber-900 hover:bg-amber-100/60"
               >
                 Dismiss test warning
               </button>
@@ -268,7 +268,7 @@ export function Dashboard() {
             <button
               type="button"
               onClick={handleRecheckAdblock}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-amber-500/30 px-3 py-1.5 text-xs font-medium text-amber-100 hover:bg-amber-500/10"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-amber-300 bg-white px-3 py-1.5 text-xs font-medium text-amber-900 hover:bg-amber-100/60"
             >
               <RefreshCw className="h-3.5 w-3.5" aria-hidden="true" />
               <span>Re-check</span>
@@ -276,15 +276,15 @@ export function Dashboard() {
           </div>
         </div>
       ) : (
-        <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-800 bg-[#111827] px-5 py-3 text-xs text-slate-400">
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 bg-slate-50 px-5 py-3 text-xs text-slate-600">
           <div className="flex items-center gap-2">
-            <ShieldCheck className="h-4 w-4 text-emerald-400" aria-hidden="true" />
+            <ShieldCheck className="h-4 w-4 text-emerald-600" aria-hidden="true" />
             <span>Adblocker check passed · Browser ready for ad playback</span>
           </div>
           <button
             type="button"
             onClick={() => setMockAdblockWarning(true)}
-            className="text-slate-400 underline-offset-4 hover:text-slate-200 hover:underline whitespace-nowrap"
+            className="text-slate-600 underline-offset-4 hover:text-slate-900 hover:underline whitespace-nowrap"
           >
             Preview adblock warning
           </button>
@@ -293,59 +293,59 @@ export function Dashboard() {
 
       {/* Key Metrics Row */}
       <section aria-label="Account summary" className="grid grid-cols-1 gap-4 md:grid-cols-3">
-        <div className="rounded-xl border border-slate-800 bg-[#111827] p-6">
-          <p className="text-xs font-medium text-slate-400">Available Balance</p>
+        <div className="rounded-xl border border-slate-200 bg-white p-6">
+          <p className="text-xs font-medium text-slate-500">Available Balance</p>
           {loadingInitial ? (
-            <div className="mt-3 h-9 w-32 animate-pulse rounded bg-slate-800" />
+            <div className="mt-3 h-9 w-32 animate-pulse rounded bg-slate-100" />
           ) : (
-            <p className="mt-2 font-mono text-3xl font-bold tabular-nums text-white">
+            <p className="mt-2 font-mono text-3xl font-bold tabular-nums text-slate-900">
               Rs. {balance.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}
             </p>
           )}
-          <p className="mt-2 text-xs text-slate-400">
+          <p className="mt-2 text-xs text-slate-500">
             Minimum withdrawal Rs. 500 via JazzCash or Easypaisa
           </p>
         </div>
 
-        <div className="rounded-xl border border-slate-800 bg-[#111827] p-6">
-          <p className="text-xs font-medium text-slate-400">Ads Watched Today</p>
+        <div className="rounded-xl border border-slate-200 bg-white p-6">
+          <p className="text-xs font-medium text-slate-500">Ads Watched Today</p>
           {loadingInitial ? (
-            <div className="mt-3 h-9 w-24 animate-pulse rounded bg-slate-800" />
+            <div className="mt-3 h-9 w-24 animate-pulse rounded bg-slate-100" />
           ) : (
-            <p className="mt-2 font-mono text-3xl font-bold tabular-nums text-emerald-400">
+            <p className="mt-2 font-mono text-3xl font-bold tabular-nums text-emerald-600">
               {adsWatched} <span className="text-lg font-medium text-slate-400">/ {DAILY_AD_TARGET}</span>
             </p>
           )}
-          <p className="mt-2 text-xs text-slate-400">
+          <p className="mt-2 text-xs text-slate-500">
             {DAILY_AD_TARGET - adsWatched} more {DAILY_AD_TARGET - adsWatched === 1 ? 'ad' : 'ads'} until Rs. {MILESTONE_REWARD_PKR} reward
           </p>
         </div>
 
-        <div className="rounded-xl border border-slate-800 bg-[#111827] p-6">
-          <p className="text-xs font-medium text-slate-400">Cooldown Status</p>
+        <div className="rounded-xl border border-slate-200 bg-white p-6">
+          <p className="text-xs font-medium text-slate-500">Cooldown Status</p>
           {loadingInitial ? (
-            <div className="mt-3 h-9 w-28 animate-pulse rounded bg-slate-800" />
+            <div className="mt-3 h-9 w-28 animate-pulse rounded bg-slate-100" />
           ) : (
-            <p className="mt-2 font-mono text-3xl font-bold tabular-nums text-slate-100">
+            <p className="mt-2 font-mono text-3xl font-bold tabular-nums text-slate-900">
               {cooldownLeft > 0 ? `${cooldownLeft}s` : 'Ready'}
             </p>
           )}
-          <p className="mt-2 text-xs text-slate-400">
+          <p className="mt-2 text-xs text-slate-500">
             60-second verification interval between ad views
           </p>
         </div>
       </section>
 
       {/* Primary Watch & Earn Action Area */}
-      <section className="rounded-xl border border-slate-800 bg-[#111827] p-6 sm:p-8">
+      <section className="rounded-xl border border-slate-200 bg-white p-6 sm:p-8">
         <div className="flex flex-col justify-between gap-6 lg:flex-row lg:items-center">
           <div className="max-w-xl space-y-3">
-            <h2 className="font-display text-lg font-semibold text-white">
+            <h2 className="font-display text-lg font-semibold text-slate-900">
               Daily Milestone Progress
             </h2>
-            <p className="text-sm leading-relaxed text-slate-400">
+            <p className="text-sm leading-relaxed text-slate-600">
               Each completed ad view adds 1 step toward your 10-ad milestone. Reaching 10/10
-              automatically credits <span className="font-mono font-semibold text-emerald-400">Rs. {MILESTONE_REWARD_PKR}</span>{' '}
+              automatically credits <span className="font-mono font-semibold text-emerald-700">Rs. {MILESTONE_REWARD_PKR}</span>{' '}
               and resets your counter for the next round.
             </p>
           </div>
@@ -354,7 +354,7 @@ export function Dashboard() {
             type="button"
             onClick={playDemoAd}
             disabled={cooldownLeft > 0 || savingReward || loadingInitial || !profile}
-            className="inline-flex min-w-[200px] items-center justify-center gap-2.5 rounded-lg bg-emerald-600 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-emerald-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 disabled:cursor-not-allowed disabled:bg-slate-800 disabled:text-slate-400 whitespace-nowrap shrink-0"
+            className="inline-flex min-w-[200px] items-center justify-center gap-2.5 rounded-lg bg-emerald-600 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-emerald-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-500 whitespace-nowrap shrink-0"
           >
             {cooldownLeft > 0 ? (
               <>
@@ -376,12 +376,12 @@ export function Dashboard() {
         </div>
 
         {/* Visual Progress Bar */}
-        <div className="mt-8 space-y-2.5 border-t border-slate-800 pt-6">
+        <div className="mt-8 space-y-2.5 border-t border-slate-200 pt-6">
           <div className="flex items-center justify-between text-sm">
-            <span className="font-medium text-slate-200">
-              Cycle progress: <span className="font-mono tabular-nums text-emerald-400">{adsWatched}/{DAILY_AD_TARGET} ads watched</span>
+            <span className="font-medium text-slate-700">
+              Cycle progress: <span className="font-mono tabular-nums text-emerald-700">{adsWatched}/{DAILY_AD_TARGET} ads watched</span>
             </span>
-            <span className="font-mono text-xs tabular-nums text-slate-400">{progressPercent}%</span>
+            <span className="font-mono text-xs tabular-nums text-slate-500">{progressPercent}%</span>
           </div>
 
           <div
@@ -390,10 +390,10 @@ export function Dashboard() {
             aria-valuemin={0}
             aria-valuemax={DAILY_AD_TARGET}
             aria-label="Ads watched progress"
-            className="h-3 w-full overflow-hidden rounded-full bg-[#090D16] ring-1 ring-inset ring-slate-800"
+            className="h-3 w-full overflow-hidden rounded-full bg-slate-100 ring-1 ring-inset ring-slate-200"
           >
             <div
-              className="h-full bg-emerald-500 transition-[width] duration-300 ease-out"
+              className="h-full bg-emerald-600 transition-[width] duration-300 ease-out"
               style={{ width: `${progressPercent}%` }}
             />
           </div>
@@ -403,7 +403,7 @@ export function Dashboard() {
               <div
                 key={idx}
                 className={`h-1.5 rounded-xs transition-colors ${
-                  idx < adsWatched ? 'bg-emerald-500/80' : 'bg-slate-800'
+                  idx < adsWatched ? 'bg-emerald-600' : 'bg-slate-200'
                 }`}
               />
             ))}
@@ -412,16 +412,16 @@ export function Dashboard() {
       </section>
 
       {/* Recent Withdrawals Table */}
-      <section className="rounded-xl border border-slate-800 bg-[#111827]">
-        <div className="flex items-center justify-between border-b border-slate-800 px-6 py-4">
+      <section className="rounded-xl border border-slate-200 bg-white">
+        <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4">
           <div>
-            <h2 className="font-display text-base font-semibold text-white">Recent Withdrawals</h2>
-            <p className="text-xs text-slate-400">Latest payout requests linked to your account</p>
+            <h2 className="font-display text-base font-semibold text-slate-900">Recent Withdrawals</h2>
+            <p className="text-xs text-slate-500">Latest payout requests linked to your account</p>
           </div>
           <button
             type="button"
             onClick={() => void loadWithdrawals()}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-slate-800 px-3 py-1.5 text-xs font-medium text-slate-300 transition-colors hover:bg-slate-800 hover:text-white"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 transition-colors hover:bg-slate-50 hover:text-slate-900"
           >
             <RefreshCw className="h-3.5 w-3.5" aria-hidden="true" />
             <span>Refresh</span>
@@ -430,21 +430,21 @@ export function Dashboard() {
 
         {loadingWithdrawals ? (
           <div className="space-y-3 p-6">
-            <div className="h-9 w-full animate-pulse rounded bg-slate-800/70" />
-            <div className="h-9 w-full animate-pulse rounded bg-slate-800/50" />
+            <div className="h-9 w-full animate-pulse rounded bg-slate-100" />
+            <div className="h-9 w-full animate-pulse rounded bg-slate-100" />
           </div>
         ) : withdrawals.length === 0 ? (
           <div className="px-6 py-10 text-center">
-            <p className="text-sm font-medium text-slate-300">No withdrawal requests yet</p>
-            <p className="mt-1 text-xs text-slate-400">
+            <p className="text-sm font-medium text-slate-800">No withdrawal requests yet</p>
+            <p className="mt-1 text-xs text-slate-500">
               Once your balance reaches Rs. 500, you can withdraw directly to JazzCash or Easypaisa.
             </p>
             <button
               type="button"
               onClick={openWithdrawModal}
-              className="mt-4 inline-flex items-center gap-2 rounded-lg border border-slate-700 px-4 py-2 text-xs font-semibold text-slate-200 transition-colors hover:bg-slate-800"
+              className="mt-4 inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2 text-xs font-semibold text-slate-800 transition-colors hover:bg-slate-50"
             >
-              <Wallet className="h-3.5 w-3.5 text-emerald-400" aria-hidden="true" />
+              <Wallet className="h-3.5 w-3.5 text-emerald-600" aria-hidden="true" />
               <span>Request Withdrawal</span>
             </button>
           </div>
@@ -452,7 +452,7 @@ export function Dashboard() {
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
               <thead>
-                <tr className="border-b border-slate-800 text-xs font-medium text-slate-400">
+                <tr className="border-b border-slate-200 bg-slate-50/70 text-xs font-medium text-slate-500">
                   <th className="px-6 py-3">Date</th>
                   <th className="px-6 py-3">Method</th>
                   <th className="px-6 py-3">Account</th>
@@ -460,34 +460,34 @@ export function Dashboard() {
                   <th className="px-6 py-3 text-right">Status</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800/80">
+              <tbody className="divide-y divide-slate-200">
                 {withdrawals.map((item) => (
-                  <tr key={item.id} className="transition-colors hover:bg-slate-800/30">
-                    <td className="px-6 py-3.5 font-mono text-xs tabular-nums text-slate-400 whitespace-nowrap">
+                  <tr key={item.id} className="transition-colors hover:bg-slate-50">
+                    <td className="px-6 py-3.5 font-mono text-xs tabular-nums text-slate-500 whitespace-nowrap">
                       {new Date(item.created_at).toLocaleDateString()}
                     </td>
-                    <td className="px-6 py-3.5 text-slate-200 whitespace-nowrap">
+                    <td className="px-6 py-3.5 text-slate-800 whitespace-nowrap">
                       {item.payment_method}
                     </td>
-                    <td className="px-6 py-3.5 font-mono text-xs tabular-nums text-slate-300 whitespace-nowrap">
+                    <td className="px-6 py-3.5 font-mono text-xs tabular-nums text-slate-600 whitespace-nowrap">
                       {item.account_number}
                     </td>
-                    <td className="px-6 py-3.5 text-right font-mono font-medium tabular-nums text-white whitespace-nowrap">
+                    <td className="px-6 py-3.5 text-right font-mono font-medium tabular-nums text-slate-900 whitespace-nowrap">
                       Rs. {item.amount.toLocaleString()}
                     </td>
                     <td className="px-6 py-3.5 text-right whitespace-nowrap">
                       {item.status === 'paid' ? (
-                        <span className="inline-flex items-center gap-1.5 text-xs font-medium text-emerald-400">
+                        <span className="inline-flex items-center gap-1.5 text-xs font-medium text-emerald-700">
                           <CheckCircle2 className="h-3.5 w-3.5" aria-hidden="true" />
                           <span>Paid</span>
                         </span>
                       ) : item.status === 'rejected' ? (
-                        <span className="inline-flex items-center gap-1.5 text-xs font-medium text-red-400">
+                        <span className="inline-flex items-center gap-1.5 text-xs font-medium text-red-700">
                           <XCircle className="h-3.5 w-3.5" aria-hidden="true" />
                           <span>Rejected</span>
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1.5 text-xs font-medium text-amber-400">
+                        <span className="inline-flex items-center gap-1.5 text-xs font-medium text-amber-700">
                           <AlertTriangle className="h-3.5 w-3.5" aria-hidden="true" />
                           <span>Pending</span>
                         </span>

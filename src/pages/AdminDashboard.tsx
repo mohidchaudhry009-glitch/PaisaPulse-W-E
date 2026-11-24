@@ -130,7 +130,6 @@ export function AdminDashboard() {
     if (!supabase) return;
     setProcessingId(withdrawal.id);
     try {
-      // Transition status from pending -> rejected atomically first to prevent duplicate refunds
       const { data: rejectedRow, error: rejectError } = await supabase
         .from('withdrawals')
         .update({ status: 'rejected' })
@@ -216,12 +215,12 @@ export function AdminDashboard() {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-800 pb-5">
+      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200 pb-5">
         <div>
-          <h1 className="font-display text-2xl font-bold tracking-tight text-white">
+          <h1 className="font-display text-2xl font-bold tracking-tight text-slate-900">
             Admin Console
           </h1>
-          <p className="mt-1 text-sm text-slate-400">
+          <p className="mt-1 text-sm text-slate-600">
             Review pending payout requests and manage member account access.
           </p>
         </div>
@@ -229,30 +228,30 @@ export function AdminDashboard() {
         <button
           type="button"
           onClick={() => void fetchAdminData()}
-          className="inline-flex items-center gap-2 rounded-lg border border-slate-700 bg-[#111827] px-4 py-2 text-sm font-medium text-slate-200 transition-colors hover:bg-slate-800 whitespace-nowrap shrink-0"
+          className="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 hover:text-slate-900 whitespace-nowrap shrink-0"
         >
-          <RefreshCw className="h-4 w-4 text-emerald-400" aria-hidden="true" />
+          <RefreshCw className="h-4 w-4 text-emerald-600" aria-hidden="true" />
           <span>Refresh Data</span>
         </button>
       </div>
 
       {/* Summary Strip */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <div className="rounded-xl border border-slate-800 bg-[#111827] p-5">
-          <p className="text-xs font-medium text-slate-400">Pending Withdrawals</p>
-          <p className="mt-2 font-mono text-2xl font-bold tabular-nums text-amber-400">
+        <div className="rounded-xl border border-slate-200 bg-white p-5">
+          <p className="text-xs font-medium text-slate-500">Pending Withdrawals</p>
+          <p className="mt-2 font-mono text-2xl font-bold tabular-nums text-amber-600">
             {pendingWithdrawals.length}
           </p>
         </div>
-        <div className="rounded-xl border border-slate-800 bg-[#111827] p-5">
-          <p className="text-xs font-medium text-slate-400">Total Users</p>
-          <p className="mt-2 font-mono text-2xl font-bold tabular-nums text-white">
+        <div className="rounded-xl border border-slate-200 bg-white p-5">
+          <p className="text-xs font-medium text-slate-500">Total Users</p>
+          <p className="mt-2 font-mono text-2xl font-bold tabular-nums text-slate-900">
             {users.length}
           </p>
         </div>
-        <div className="rounded-xl border border-slate-800 bg-[#111827] p-5">
-          <p className="text-xs font-medium text-slate-400">Banned Accounts</p>
-          <p className="mt-2 font-mono text-2xl font-bold tabular-nums text-red-400">
+        <div className="rounded-xl border border-slate-200 bg-white p-5">
+          <p className="text-xs font-medium text-slate-500">Banned Accounts</p>
+          <p className="mt-2 font-mono text-2xl font-bold tabular-nums text-red-600">
             {users.filter((u) => u.is_banned).length}
           </p>
         </div>
@@ -263,7 +262,7 @@ export function AdminDashboard() {
         <div
           role="tablist"
           aria-label="Admin sections"
-          className="inline-flex items-center gap-1 rounded-lg border border-slate-800 bg-[#111827] p-1"
+          className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-slate-50 p-1"
         >
           <button
             type="button"
@@ -272,8 +271,8 @@ export function AdminDashboard() {
             onClick={() => setActiveTab('withdrawals')}
             className={`inline-flex items-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition-colors whitespace-nowrap shrink-0 ${
               activeTab === 'withdrawals'
-                ? 'bg-emerald-600 text-white'
-                : 'text-slate-300 hover:text-white'
+                ? 'bg-white text-slate-900 shadow-xs'
+                : 'text-slate-600 hover:text-slate-900'
             }`}
           >
             <Wallet className="h-4 w-4" aria-hidden="true" />
@@ -287,8 +286,8 @@ export function AdminDashboard() {
             onClick={() => setActiveTab('users')}
             className={`inline-flex items-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition-colors whitespace-nowrap shrink-0 ${
               activeTab === 'users'
-                ? 'bg-emerald-600 text-white'
-                : 'text-slate-300 hover:text-white'
+                ? 'bg-white text-slate-900 shadow-xs'
+                : 'text-slate-600 hover:text-slate-900'
             }`}
           >
             <Users className="h-4 w-4" aria-hidden="true" />
@@ -299,7 +298,7 @@ export function AdminDashboard() {
         {activeTab === 'users' && (
           <div className="relative w-full sm:w-72">
             <Search
-              className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500"
+              className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"
               aria-hidden="true"
             />
             <input
@@ -308,7 +307,7 @@ export function AdminDashboard() {
               onChange={(e) => setUserSearch(e.target.value)}
               placeholder="Search user email..."
               aria-label="Search users by email"
-              className="w-full rounded-lg border border-slate-700 bg-[#111827] py-2 pl-9 pr-3.5 text-sm text-slate-100 placeholder:text-slate-500 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+              className="w-full rounded-lg border border-slate-300 bg-white py-2 pl-9 pr-3.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-emerald-600 focus:outline-none focus:ring-1 focus:ring-emerald-600"
             />
           </div>
         )}
@@ -319,26 +318,26 @@ export function AdminDashboard() {
         <section
           role="tabpanel"
           aria-label="Pending withdrawals"
-          className="rounded-xl border border-slate-800 bg-[#111827]"
+          className="rounded-xl border border-slate-200 bg-white"
         >
-          <div className="border-b border-slate-800 px-6 py-4">
-            <h2 className="font-display text-base font-semibold text-white">
+          <div className="border-b border-slate-200 px-6 py-4">
+            <h2 className="font-display text-base font-semibold text-slate-900">
               Pending Withdrawal Queue
             </h2>
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-slate-500">
               Approve marks the payout as paid; Reject returns the requested funds to the user&apos;s wallet.
             </p>
           </div>
 
           {loadingWithdrawals ? (
             <div className="space-y-3 p-6">
-              <div className="h-10 w-full animate-pulse rounded bg-slate-800/70" />
-              <div className="h-10 w-full animate-pulse rounded bg-slate-800/50" />
+              <div className="h-10 w-full animate-pulse rounded bg-slate-100" />
+              <div className="h-10 w-full animate-pulse rounded bg-slate-100" />
             </div>
           ) : pendingWithdrawals.length === 0 ? (
             <div className="px-6 py-12 text-center">
-              <p className="text-sm font-medium text-slate-200">No pending withdrawals</p>
-              <p className="mt-1 text-xs text-slate-400">
+              <p className="text-sm font-medium text-slate-800">No pending withdrawals</p>
+              <p className="mt-1 text-xs text-slate-500">
                 All withdrawal requests have been reviewed.
               </p>
             </div>
@@ -346,7 +345,7 @@ export function AdminDashboard() {
             <div className="overflow-x-auto">
               <table className="w-full text-left text-sm">
                 <thead>
-                  <tr className="border-b border-slate-800 text-xs font-medium text-slate-400">
+                  <tr className="border-b border-slate-200 bg-slate-50/70 text-xs font-medium text-slate-500">
                     <th className="px-6 py-3">User Email</th>
                     <th className="px-6 py-3">Method</th>
                     <th className="px-6 py-3">Account Number</th>
@@ -354,24 +353,24 @@ export function AdminDashboard() {
                     <th className="px-6 py-3 text-right">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-800/80">
+                <tbody className="divide-y divide-slate-200">
                   {pendingWithdrawals.map((item) => {
                     const isBusy = processingId === item.id;
                     return (
-                      <tr key={item.id} className="transition-colors hover:bg-slate-800/30">
+                      <tr key={item.id} className="transition-colors hover:bg-slate-50">
                         <td className="px-6 py-4">
-                          <div className="font-medium text-slate-100">{item.user_email}</div>
+                          <div className="font-medium text-slate-900">{item.user_email}</div>
                           <div className="mt-0.5 font-mono text-xs tabular-nums text-slate-500">
                             {new Date(item.created_at).toLocaleString()}
                           </div>
                         </td>
-                        <td className="px-6 py-4 text-slate-300 whitespace-nowrap">
+                        <td className="px-6 py-4 text-slate-700 whitespace-nowrap">
                           {item.payment_method}
                         </td>
-                        <td className="px-6 py-4 font-mono text-xs tabular-nums text-slate-200 whitespace-nowrap">
+                        <td className="px-6 py-4 font-mono text-xs tabular-nums text-slate-700 whitespace-nowrap">
                           {item.account_number}
                         </td>
-                        <td className="px-6 py-4 text-right font-mono font-semibold tabular-nums text-white whitespace-nowrap">
+                        <td className="px-6 py-4 text-right font-mono font-semibold tabular-nums text-slate-900 whitespace-nowrap">
                           Rs. {item.amount.toLocaleString()}
                         </td>
                         <td className="px-6 py-4 text-right whitespace-nowrap">
@@ -380,7 +379,7 @@ export function AdminDashboard() {
                               type="button"
                               disabled={isBusy}
                               onClick={() => void handleApproveWithdrawal(item)}
-                              className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-emerald-500 disabled:opacity-50"
+                              className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-emerald-700 disabled:opacity-50"
                             >
                               <Check className="h-3.5 w-3.5" aria-hidden="true" />
                               <span>Approve</span>
@@ -389,7 +388,7 @@ export function AdminDashboard() {
                               type="button"
                               disabled={isBusy}
                               onClick={() => void handleRejectWithdrawal(item)}
-                              className="inline-flex items-center gap-1.5 rounded-lg border border-red-500/30 bg-red-950/30 px-3 py-1.5 text-xs font-semibold text-red-300 transition-colors hover:bg-red-900/50 disabled:opacity-50"
+                              className="inline-flex items-center gap-1.5 rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-700 transition-colors hover:bg-red-100 disabled:opacity-50"
                             >
                               <X className="h-3.5 w-3.5" aria-hidden="true" />
                               <span>Reject</span>
@@ -411,24 +410,24 @@ export function AdminDashboard() {
         <section
           role="tabpanel"
           aria-label="User management"
-          className="rounded-xl border border-slate-800 bg-[#111827]"
+          className="rounded-xl border border-slate-200 bg-white"
         >
-          <div className="border-b border-slate-800 px-6 py-4">
-            <h2 className="font-display text-base font-semibold text-white">Registered Users</h2>
-            <p className="text-xs text-slate-400">
+          <div className="border-b border-slate-200 px-6 py-4">
+            <h2 className="font-display text-base font-semibold text-slate-900">Registered Users</h2>
+            <p className="text-xs text-slate-500">
               Monitor balances and toggle account access restrictions.
             </p>
           </div>
 
           {loadingUsers ? (
             <div className="space-y-3 p-6">
-              <div className="h-10 w-full animate-pulse rounded bg-slate-800/70" />
-              <div className="h-10 w-full animate-pulse rounded bg-slate-800/50" />
+              <div className="h-10 w-full animate-pulse rounded bg-slate-100" />
+              <div className="h-10 w-full animate-pulse rounded bg-slate-100" />
             </div>
           ) : filteredUsers.length === 0 ? (
             <div className="px-6 py-12 text-center">
-              <p className="text-sm font-medium text-slate-200">No matching users found</p>
-              <p className="mt-1 text-xs text-slate-400">
+              <p className="text-sm font-medium text-slate-800">No matching users found</p>
+              <p className="mt-1 text-xs text-slate-500">
                 Try clearing or adjusting your email search query.
               </p>
             </div>
@@ -436,7 +435,7 @@ export function AdminDashboard() {
             <div className="overflow-x-auto">
               <table className="w-full text-left text-sm">
                 <thead>
-                  <tr className="border-b border-slate-800 text-xs font-medium text-slate-400">
+                  <tr className="border-b border-slate-200 bg-slate-50/70 text-xs font-medium text-slate-500">
                     <th className="px-6 py-3">Email</th>
                     <th className="px-6 py-3">Access Status</th>
                     <th className="px-6 py-3 text-right">Ads Today</th>
@@ -444,16 +443,16 @@ export function AdminDashboard() {
                     <th className="px-6 py-3 text-right">Action</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-800/80">
+                <tbody className="divide-y divide-slate-200">
                   {filteredUsers.map((u) => {
                     const isSelf = u.id === profile?.id;
                     const isBusy = processingId === u.id;
                     return (
-                      <tr key={u.id} className="transition-colors hover:bg-slate-800/30">
+                      <tr key={u.id} className="transition-colors hover:bg-slate-50">
                         <td className="px-6 py-4">
-                          <div className="font-medium text-slate-100">{u.email}</div>
+                          <div className="font-medium text-slate-900">{u.email}</div>
                           {u.is_admin && (
-                            <span className="mt-0.5 inline-flex items-center gap-1 text-xs text-emerald-400">
+                            <span className="mt-0.5 inline-flex items-center gap-1 text-xs font-medium text-emerald-700">
                               <ShieldCheck className="h-3 w-3" aria-hidden="true" />
                               <span>Administrator</span>
                             </span>
@@ -461,21 +460,21 @@ export function AdminDashboard() {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           {u.is_banned ? (
-                            <span className="inline-flex items-center gap-1.5 text-xs font-medium text-red-400">
+                            <span className="inline-flex items-center gap-1.5 text-xs font-medium text-red-700">
                               <Ban className="h-3.5 w-3.5" aria-hidden="true" />
                               <span>Banned</span>
                             </span>
                           ) : (
-                            <span className="inline-flex items-center gap-1.5 text-xs font-medium text-emerald-400">
+                            <span className="inline-flex items-center gap-1.5 text-xs font-medium text-emerald-700">
                               <UserCheck className="h-3.5 w-3.5" aria-hidden="true" />
                               <span>Active</span>
                             </span>
                           )}
                         </td>
-                        <td className="px-6 py-4 text-right font-mono text-xs tabular-nums text-slate-300 whitespace-nowrap">
+                        <td className="px-6 py-4 text-right font-mono text-xs tabular-nums text-slate-600 whitespace-nowrap">
                           {u.ads_watched_today} / 10
                         </td>
-                        <td className="px-6 py-4 text-right font-mono font-semibold tabular-nums text-white whitespace-nowrap">
+                        <td className="px-6 py-4 text-right font-mono font-semibold tabular-nums text-slate-900 whitespace-nowrap">
                           Rs. {u.balance.toLocaleString()}
                         </td>
                         <td className="px-6 py-4 text-right whitespace-nowrap">
@@ -485,8 +484,8 @@ export function AdminDashboard() {
                             onClick={() => void handleToggleBan(u)}
                             className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-40 ${
                               u.is_banned
-                                ? 'border border-emerald-500/30 bg-emerald-950/30 text-emerald-300 hover:bg-emerald-900/40'
-                                : 'border border-red-500/30 bg-red-950/30 text-red-300 hover:bg-red-900/50'
+                                ? 'border border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
+                                : 'border border-red-200 bg-red-50 text-red-700 hover:bg-red-100'
                             }`}
                           >
                             {u.is_banned ? (
