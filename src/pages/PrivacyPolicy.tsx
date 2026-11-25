@@ -10,7 +10,7 @@ export function PrivacyPolicy() {
       <div className="mx-auto max-w-3xl space-y-8">
         <div className="flex items-center justify-between border-b border-slate-200 pb-5">
           <Link to={user ? '/dashboard' : '/login'} className="font-display text-lg font-bold text-slate-900">
-            PaisaPulse
+            CashView
           </Link>
           <Link
             to={user ? '/dashboard' : '/login'}
@@ -30,7 +30,7 @@ export function PrivacyPolicy() {
           <section className="space-y-2">
             <h2 className="font-display text-base font-semibold text-slate-900">1. Information We Collect</h2>
             <p className="text-sm leading-relaxed text-slate-600">
-              PaisaPulse collects only the account information required to authenticate your profile,
+              CashView collects only the account information required to authenticate your profile,
               track verified daily ad completions, and process requested JazzCash or Easypaisa payouts.
               This includes your email address, wallet balance, ad activity timestamps, and submitted
               withdrawal account numbers.

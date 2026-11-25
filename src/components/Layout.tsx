@@ -54,7 +54,7 @@ export function Layout() {
             onClick={() => setMobileMenuOpen(false)}
             className="font-display text-lg font-bold tracking-tight text-slate-900 whitespace-nowrap shrink-0"
           >
-            PaisaPulse
+            CashView
           </Link>
           <button
             type="button"
@@ -147,7 +147,7 @@ export function Layout() {
           to="/dashboard"
           className="font-display text-base font-bold tracking-tight text-slate-900 whitespace-nowrap shrink-0"
         >
-          PaisaPulse
+          CashView
         </Link>
         <div className="flex items-center gap-3">
           <span className="font-mono text-xs font-semibold tabular-nums text-emerald-700">
@@ -190,7 +190,7 @@ export function Layout() {
 
         <footer className="border-t border-slate-200 px-4 py-4 sm:px-6 lg:px-8">
           <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 text-xs text-slate-500">
-            <span>© {new Date().getFullYear()} PaisaPulse</span>
+            <span>© {new Date().getFullYear()} CashView</span>
             <div className="flex items-center gap-4">
               <Link to="/privacy" className="transition-colors hover:text-slate-800">
                 Privacy Policy

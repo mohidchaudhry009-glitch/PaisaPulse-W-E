@@ -10,7 +10,7 @@ export function Terms() {
       <div className="mx-auto max-w-3xl space-y-8">
         <div className="flex items-center justify-between border-b border-slate-200 pb-5">
           <Link to={user ? '/dashboard' : '/login'} className="font-display text-lg font-bold text-slate-900">
-            PaisaPulse
+            CashView
           </Link>
           <Link
             to={user ? '/dashboard' : '/login'}
@@ -30,7 +30,7 @@ export function Terms() {
           <section className="space-y-2">
             <h2 className="font-display text-base font-semibold text-slate-900">1. Eligibility &amp; Fair Use</h2>
             <p className="text-sm leading-relaxed text-slate-600">
-              Each member is permitted one PaisaPulse account. Automated scripts, adblock bypass
+              Each member is permitted one CashView account. Automated scripts, adblock bypass
               manipulation, or multi-account farming are prohibited and may result in permanent
               account suspension.
             </p>
@@ -40,7 +40,7 @@ export function Terms() {
             <h2 className="font-display text-base font-semibold text-slate-900">2. Rewards &amp; Cooldowns</h2>
             <p className="text-sm leading-relaxed text-slate-600">
               Ad views are subject to a 60-second cooldown interval. Completing 10 verified ad views
-              credits Rs. 50 to your PaisaPulse wallet balance and resets your cycle counter.
+              credits Rs. 50 to your CashView wallet balance and resets your cycle counter.
             </p>
           </section>
 
@@ -49,7 +49,7 @@ export function Terms() {
             <p className="text-sm leading-relaxed text-slate-600">
               The minimum withdrawal threshold is Rs. 500 via JazzCash or Easypaisa. Requests are
               reviewed by administrators; rejected requests automatically return the withdrawn amount
-              to your PaisaPulse balance.
+              to your CashView balance.
             </p>
           </section>
         </article>

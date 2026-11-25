@@ -38,7 +38,7 @@ export function ProtectedRoute({ children, requireAdmin = false }: ProtectedRout
             Account Suspended
           </h1>
           <p className="mt-2 text-sm leading-relaxed text-slate-600">
-            Your PaisaPulse account ({profile.email}) has been restricted by an administrator.
+            Your CashView account ({profile.email}) has been restricted by an administrator.
             Ad rewards and withdrawal requests are disabled while this restriction is active.
           </p>
           <button

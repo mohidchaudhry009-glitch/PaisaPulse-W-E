@@ -305,7 +305,7 @@ export function AdminDashboard() {
       <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200 pb-5">
         <div>
           <h1 className="font-display text-2xl font-bold tracking-tight text-slate-900">
-            PaisaPulse Admin Panel
+            CashView Admin Panel
           </h1>
           <p className="mt-1 text-sm text-slate-600">
             Approve or reject payouts, adjust member balances, and manage account access.

@@ -96,7 +96,7 @@ export function Signup() {
       <div className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center">
         <div className="mb-8">
           <Link to="/login" className="font-display text-2xl font-bold tracking-tight text-slate-900">
-            PaisaPulse
+            CashView
           </Link>
           <p className="mt-2 text-sm text-slate-600">
             Create your account to receive a Rs. {SIGNUP_BONUS_PKR} welcome bonus and start earning on daily ad milestones.
@@ -225,7 +225,7 @@ export function Signup() {
       </div>
 
       <footer className="mx-auto mt-8 flex w-full max-w-md items-center justify-between text-xs text-slate-500">
-        <span>© {new Date().getFullYear()} PaisaPulse</span>
+        <span>© {new Date().getFullYear()} CashView</span>
         <div className="flex items-center gap-3">
           <Link to="/privacy" className="hover:text-slate-800">
             Privacy Policy
