@@ -1,8 +1,11 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import {
+  AlertTriangle,
   Ban,
   Check,
+  CheckCircle2,
+  Pencil,
   RefreshCw,
   Search,
   ShieldCheck,
@@ -10,25 +13,33 @@ import {
   Users,
   Wallet,
   X,
+  XCircle,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { supabase } from '../lib/supabase';
-import type { Profile, Withdrawal } from '../types/database';
+import type { Profile, Withdrawal, WithdrawalStatus } from '../types/database';
 
 type AdminTab = 'withdrawals' | 'users';
+type WithdrawalFilter = 'pending' | 'paid' | 'rejected' | 'all';
 
 export function AdminDashboard() {
   const { profile, loading: authLoading, refreshProfile } = useAuth();
   const { showToast } = useToast();
 
   const [activeTab, setActiveTab] = useState<AdminTab>('withdrawals');
-  const [pendingWithdrawals, setPendingWithdrawals] = useState<Withdrawal[]>([]);
+  const [withdrawalFilter, setWithdrawalFilter] = useState<WithdrawalFilter>('pending');
+  const [withdrawals, setWithdrawals] = useState<Withdrawal[]>([]);
   const [users, setUsers] = useState<Profile[]>([]);
   const [loadingWithdrawals, setLoadingWithdrawals] = useState(true);
   const [loadingUsers, setLoadingUsers] = useState(true);
   const [processingId, setProcessingId] = useState<string | null>(null);
   const [userSearch, setUserSearch] = useState('');
+
+  // Balance adjustment modal state
+  const [editingUser, setEditingUser] = useState<Profile | null>(null);
+  const [balanceInput, setBalanceInput] = useState<string>('');
+  const [savingBalance, setSavingBalance] = useState(false);
 
   const fetchAdminData = useCallback(async () => {
     if (!supabase) {
@@ -45,7 +56,6 @@ export function AdminDashboard() {
         supabase
           .from('withdrawals')
           .select('id, user_id, amount, payment_method, account_number, status, created_at')
-          .eq('status', 'pending')
           .order('created_at', { ascending: false }),
         supabase
           .from('profiles')
@@ -78,7 +88,7 @@ export function AdminDashboard() {
         user_email: emailById.get(w.user_id) ?? 'Unknown user',
       })) as Withdrawal[];
 
-      setPendingWithdrawals(normalizedWithdrawals);
+      setWithdrawals(normalizedWithdrawals);
     } finally {
       setLoadingWithdrawals(false);
       setLoadingUsers(false);
@@ -91,6 +101,29 @@ export function AdminDashboard() {
     }
   }, [profile?.is_admin, fetchAdminData]);
 
+  const pendingWithdrawals = useMemo(
+    () => withdrawals.filter((w) => w.status === 'pending'),
+    [withdrawals]
+  );
+
+  const visibleWithdrawals = useMemo(() => {
+    if (withdrawalFilter === 'all') return withdrawals;
+    return withdrawals.filter((w) => w.status === withdrawalFilter);
+  }, [withdrawals, withdrawalFilter]);
+
+  const totalPendingAmount = useMemo(
+    () => pendingWithdrawals.reduce((sum, w) => sum + w.amount, 0),
+    [pendingWithdrawals]
+  );
+
+  const totalPaidAmount = useMemo(
+    () =>
+      withdrawals
+        .filter((w) => w.status === 'paid')
+        .reduce((sum, w) => sum + w.amount, 0),
+    [withdrawals]
+  );
+
   const filteredUsers = useMemo(() => {
     const query = userSearch.trim().toLowerCase();
     if (!query) return users;
@@ -100,6 +133,12 @@ export function AdminDashboard() {
   if (!authLoading && profile && profile.is_admin !== true) {
     return <Navigate to="/dashboard" replace />;
   }
+
+  const updateWithdrawalStatusLocal = (id: string, nextStatus: WithdrawalStatus) => {
+    setWithdrawals((prev) =>
+      prev.map((item) => (item.id === id ? { ...item, status: nextStatus } : item))
+    );
+  };
 
   const handleApproveWithdrawal = async (withdrawal: Withdrawal) => {
     if (!supabase) return;
@@ -116,8 +155,11 @@ export function AdminDashboard() {
       if (error) throw new Error(error.message);
       if (!data) throw new Error('This withdrawal was already processed.');
 
-      setPendingWithdrawals((prev) => prev.filter((item) => item.id !== withdrawal.id));
-      showToast(`Approved Rs. ${withdrawal.amount.toLocaleString()} payout to ${withdrawal.user_email}.`, 'success');
+      updateWithdrawalStatusLocal(withdrawal.id, 'paid');
+      showToast(
+        `Approved Rs. ${withdrawal.amount.toLocaleString()} payout to ${withdrawal.user_email}.`,
+        'success'
+      );
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Unable to approve withdrawal.';
       showToast(msg, 'error');
@@ -149,7 +191,9 @@ export function AdminDashboard() {
 
       if (fetchError) throw new Error(fetchError.message);
 
-      const refundedBalance = Number((Number(userProfile.balance ?? 0) + withdrawal.amount).toFixed(2));
+      const refundedBalance = Number(
+        (Number(userProfile.balance ?? 0) + withdrawal.amount).toFixed(2)
+      );
       const { error: refundError } = await supabase
         .from('profiles')
         .update({ balance: refundedBalance })
@@ -157,7 +201,7 @@ export function AdminDashboard() {
 
       if (refundError) throw new Error(refundError.message);
 
-      setPendingWithdrawals((prev) => prev.filter((item) => item.id !== withdrawal.id));
+      updateWithdrawalStatusLocal(withdrawal.id, 'rejected');
       setUsers((prev) =>
         prev.map((u) => (u.id === withdrawal.user_id ? { ...u, balance: refundedBalance } : u))
       );
@@ -212,16 +256,59 @@ export function AdminDashboard() {
     }
   };
 
+  const openEditBalance = (targetUser: Profile) => {
+    setEditingUser(targetUser);
+    setBalanceInput(String(targetUser.balance));
+  };
+
+  const handleSaveBalance = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!supabase || !editingUser) return;
+
+    const parsed = Number(balanceInput);
+    if (!Number.isFinite(parsed) || parsed < 0) {
+      showToast('Enter a valid non-negative balance amount.', 'error');
+      return;
+    }
+
+    const nextBalance = Number(parsed.toFixed(2));
+    setSavingBalance(true);
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ balance: nextBalance })
+        .eq('id', editingUser.id);
+
+      if (error) throw new Error(error.message);
+
+      setUsers((prev) =>
+        prev.map((u) => (u.id === editingUser.id ? { ...u, balance: nextBalance } : u))
+      );
+
+      if (editingUser.id === profile?.id) {
+        await refreshProfile();
+      }
+
+      showToast(`Updated ${editingUser.email} balance to Rs. ${nextBalance.toLocaleString()}.`, 'success');
+      setEditingUser(null);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Unable to update balance.';
+      showToast(msg, 'error');
+    } finally {
+      setSavingBalance(false);
+    }
+  };
+
   return (
     <div className="space-y-8">
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200 pb-5">
         <div>
           <h1 className="font-display text-2xl font-bold tracking-tight text-slate-900">
-            Admin Console
+            PaisaPulse Admin Panel
           </h1>
           <p className="mt-1 text-sm text-slate-600">
-            Review pending payout requests and manage member account access.
+            Approve or reject payouts, adjust member balances, and manage account access.
           </p>
         </div>
 
@@ -236,17 +323,32 @@ export function AdminDashboard() {
       </div>
 
       {/* Summary Strip */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <div className="rounded-xl border border-slate-200 bg-white p-5">
           <p className="text-xs font-medium text-slate-500">Pending Withdrawals</p>
           <p className="mt-2 font-mono text-2xl font-bold tabular-nums text-amber-600">
             {pendingWithdrawals.length}
           </p>
+          <p className="mt-1 font-mono text-xs tabular-nums text-slate-500">
+            Rs. {totalPendingAmount.toLocaleString()} awaiting review
+          </p>
         </div>
         <div className="rounded-xl border border-slate-200 bg-white p-5">
-          <p className="text-xs font-medium text-slate-500">Total Users</p>
+          <p className="text-xs font-medium text-slate-500">Total Paid Out</p>
+          <p className="mt-2 font-mono text-2xl font-bold tabular-nums text-emerald-700">
+            Rs. {totalPaidAmount.toLocaleString()}
+          </p>
+          <p className="mt-1 text-xs text-slate-500">
+            Completed JazzCash &amp; Easypaisa payouts
+          </p>
+        </div>
+        <div className="rounded-xl border border-slate-200 bg-white p-5">
+          <p className="text-xs font-medium text-slate-500">Registered Users</p>
           <p className="mt-2 font-mono text-2xl font-bold tabular-nums text-slate-900">
             {users.length}
+          </p>
+          <p className="mt-1 text-xs text-slate-500">
+            Active member accounts
           </p>
         </div>
         <div className="rounded-xl border border-slate-200 bg-white p-5">
@@ -254,10 +356,13 @@ export function AdminDashboard() {
           <p className="mt-2 font-mono text-2xl font-bold tabular-nums text-red-600">
             {users.filter((u) => u.is_banned).length}
           </p>
+          <p className="mt-1 text-xs text-slate-500">
+            Restricted from earning &amp; payouts
+          </p>
         </div>
       </div>
 
-      {/* Interactive Tabs */}
+      {/* Primary Section Tabs */}
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div
           role="tablist"
@@ -295,7 +400,24 @@ export function AdminDashboard() {
           </button>
         </div>
 
-        {activeTab === 'users' && (
+        {activeTab === 'withdrawals' ? (
+          <div className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-slate-50 p-1">
+            {(['pending', 'paid', 'rejected', 'all'] as WithdrawalFilter[]).map((statusKey) => (
+              <button
+                key={statusKey}
+                type="button"
+                onClick={() => setWithdrawalFilter(statusKey)}
+                className={`rounded-md px-3 py-1.5 text-xs font-medium capitalize transition-colors whitespace-nowrap shrink-0 ${
+                  withdrawalFilter === statusKey
+                    ? 'bg-white text-slate-900 shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                {statusKey}
+              </button>
+            ))}
+          </div>
+        ) : (
           <div className="relative w-full sm:w-72">
             <Search
               className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"
@@ -313,19 +435,23 @@ export function AdminDashboard() {
         )}
       </div>
 
-      {/* Tab 1: Pending Withdrawals */}
+      {/* Tab 1: Withdrawals */}
       {activeTab === 'withdrawals' && (
         <section
           role="tabpanel"
-          aria-label="Pending withdrawals"
+          aria-label="Withdrawals management"
           className="rounded-xl border border-slate-200 bg-white"
         >
           <div className="border-b border-slate-200 px-6 py-4">
             <h2 className="font-display text-base font-semibold text-slate-900">
-              Pending Withdrawal Queue
+              {withdrawalFilter === 'pending'
+                ? 'Pending Withdrawal Queue'
+                : withdrawalFilter === 'all'
+                ? 'All Withdrawal Requests'
+                : `${withdrawalFilter.charAt(0).toUpperCase() + withdrawalFilter.slice(1)} Withdrawals`}
             </h2>
             <p className="text-xs text-slate-500">
-              Approve marks the payout as paid; Reject returns the requested funds to the user&apos;s wallet.
+              Approve marks a pending payout as paid; Reject returns the requested funds to the user&apos;s wallet.
             </p>
           </div>
 
@@ -334,11 +460,15 @@ export function AdminDashboard() {
               <div className="h-10 w-full animate-pulse rounded bg-slate-100" />
               <div className="h-10 w-full animate-pulse rounded bg-slate-100" />
             </div>
-          ) : pendingWithdrawals.length === 0 ? (
+          ) : visibleWithdrawals.length === 0 ? (
             <div className="px-6 py-12 text-center">
-              <p className="text-sm font-medium text-slate-800">No pending withdrawals</p>
+              <p className="text-sm font-medium text-slate-800">
+                No {withdrawalFilter === 'all' ? '' : withdrawalFilter} withdrawals found
+              </p>
               <p className="mt-1 text-xs text-slate-500">
-                All withdrawal requests have been reviewed.
+                {withdrawalFilter === 'pending'
+                  ? 'All withdrawal requests have been reviewed.'
+                  : 'Try switching the status filter above.'}
               </p>
             </div>
           ) : (
@@ -350,11 +480,11 @@ export function AdminDashboard() {
                     <th className="px-6 py-3">Method</th>
                     <th className="px-6 py-3">Account Number</th>
                     <th className="px-6 py-3 text-right">Amount</th>
-                    <th className="px-6 py-3 text-right">Actions</th>
+                    <th className="px-6 py-3 text-right">Status / Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-200">
-                  {pendingWithdrawals.map((item) => {
+                  {visibleWithdrawals.map((item) => {
                     const isBusy = processingId === item.id;
                     return (
                       <tr key={item.id} className="transition-colors hover:bg-slate-50">
@@ -374,26 +504,43 @@ export function AdminDashboard() {
                           Rs. {item.amount.toLocaleString()}
                         </td>
                         <td className="px-6 py-4 text-right whitespace-nowrap">
-                          <div className="inline-flex items-center gap-2">
-                            <button
-                              type="button"
-                              disabled={isBusy}
-                              onClick={() => void handleApproveWithdrawal(item)}
-                              className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-emerald-700 disabled:opacity-50"
-                            >
-                              <Check className="h-3.5 w-3.5" aria-hidden="true" />
-                              <span>Approve</span>
-                            </button>
-                            <button
-                              type="button"
-                              disabled={isBusy}
-                              onClick={() => void handleRejectWithdrawal(item)}
-                              className="inline-flex items-center gap-1.5 rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-700 transition-colors hover:bg-red-100 disabled:opacity-50"
-                            >
-                              <X className="h-3.5 w-3.5" aria-hidden="true" />
-                              <span>Reject</span>
-                            </button>
-                          </div>
+                          {item.status === 'pending' ? (
+                            <div className="inline-flex items-center gap-2">
+                              <button
+                                type="button"
+                                disabled={isBusy}
+                                onClick={() => void handleApproveWithdrawal(item)}
+                                className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-emerald-700 disabled:opacity-50"
+                              >
+                                <Check className="h-3.5 w-3.5" aria-hidden="true" />
+                                <span>Approve</span>
+                              </button>
+                              <button
+                                type="button"
+                                disabled={isBusy}
+                                onClick={() => void handleRejectWithdrawal(item)}
+                                className="inline-flex items-center gap-1.5 rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-700 transition-colors hover:bg-red-100 disabled:opacity-50"
+                              >
+                                <X className="h-3.5 w-3.5" aria-hidden="true" />
+                                <span>Reject</span>
+                              </button>
+                            </div>
+                          ) : item.status === 'paid' ? (
+                            <span className="inline-flex items-center gap-1.5 text-xs font-medium text-emerald-700">
+                              <CheckCircle2 className="h-3.5 w-3.5" aria-hidden="true" />
+                              <span>Paid</span>
+                            </span>
+                          ) : item.status === 'rejected' ? (
+                            <span className="inline-flex items-center gap-1.5 text-xs font-medium text-red-700">
+                              <XCircle className="h-3.5 w-3.5" aria-hidden="true" />
+                              <span>Rejected</span>
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1.5 text-xs font-medium text-amber-700">
+                              <AlertTriangle className="h-3.5 w-3.5" aria-hidden="true" />
+                              <span>Pending</span>
+                            </span>
+                          )}
                         </td>
                       </tr>
                     );
@@ -415,7 +562,7 @@ export function AdminDashboard() {
           <div className="border-b border-slate-200 px-6 py-4">
             <h2 className="font-display text-base font-semibold text-slate-900">Registered Users</h2>
             <p className="text-xs text-slate-500">
-              Monitor balances and toggle account access restrictions.
+              Monitor balances, update wallet amounts, and toggle account access restrictions.
             </p>
           </div>
 
@@ -440,7 +587,7 @@ export function AdminDashboard() {
                     <th className="px-6 py-3">Access Status</th>
                     <th className="px-6 py-3 text-right">Ads Today</th>
                     <th className="px-6 py-3 text-right">Balance</th>
-                    <th className="px-6 py-3 text-right">Action</th>
+                    <th className="px-6 py-3 text-right">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-200">
@@ -478,28 +625,39 @@ export function AdminDashboard() {
                           Rs. {u.balance.toLocaleString()}
                         </td>
                         <td className="px-6 py-4 text-right whitespace-nowrap">
-                          <button
-                            type="button"
-                            disabled={isBusy || isSelf}
-                            onClick={() => void handleToggleBan(u)}
-                            className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-40 ${
-                              u.is_banned
-                                ? 'border border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
-                                : 'border border-red-200 bg-red-50 text-red-700 hover:bg-red-100'
-                            }`}
-                          >
-                            {u.is_banned ? (
-                              <>
-                                <UserCheck className="h-3.5 w-3.5" aria-hidden="true" />
-                                <span>Unban</span>
-                              </>
-                            ) : (
-                              <>
-                                <Ban className="h-3.5 w-3.5" aria-hidden="true" />
-                                <span>Ban</span>
-                              </>
-                            )}
-                          </button>
+                          <div className="inline-flex items-center gap-2">
+                            <button
+                              type="button"
+                              disabled={isBusy}
+                              onClick={() => openEditBalance(u)}
+                              className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 transition-colors hover:bg-slate-50 hover:text-slate-900 disabled:opacity-40"
+                            >
+                              <Pencil className="h-3.5 w-3.5" aria-hidden="true" />
+                              <span>Edit Balance</span>
+                            </button>
+                            <button
+                              type="button"
+                              disabled={isBusy || isSelf}
+                              onClick={() => void handleToggleBan(u)}
+                              className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-40 ${
+                                u.is_banned
+                                  ? 'border border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
+                                  : 'border border-red-200 bg-red-50 text-red-700 hover:bg-red-100'
+                              }`}
+                            >
+                              {u.is_banned ? (
+                                <>
+                                  <UserCheck className="h-3.5 w-3.5" aria-hidden="true" />
+                                  <span>Unban</span>
+                                </>
+                              ) : (
+                                <>
+                                  <Ban className="h-3.5 w-3.5" aria-hidden="true" />
+                                  <span>Ban</span>
+                                </>
+                              )}
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     );
@@ -509,6 +667,75 @@ export function AdminDashboard() {
             </div>
           )}
         </section>
+      )}
+
+      {/* Edit Balance Modal */}
+      {editingUser && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4 backdrop-blur-xs"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="edit-balance-title"
+        >
+          <div className="w-full max-w-sm rounded-xl border border-slate-200 bg-white shadow-xl">
+            <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4">
+              <h2 id="edit-balance-title" className="font-display text-base font-semibold text-slate-900">
+                Adjust User Balance
+              </h2>
+              <button
+                type="button"
+                onClick={() => setEditingUser(null)}
+                aria-label="Close balance modal"
+                className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveBalance} className="space-y-4 p-6">
+              <div>
+                <p className="text-xs text-slate-500">Account</p>
+                <p className="mt-0.5 truncate text-sm font-medium text-slate-900">
+                  {editingUser.email}
+                </p>
+              </div>
+
+              <div className="space-y-1.5">
+                <label htmlFor="admin-balance-input" className="block text-sm font-medium text-slate-800">
+                  New Balance (PKR)
+                </label>
+                <input
+                  id="admin-balance-input"
+                  type="number"
+                  min={0}
+                  step="0.01"
+                  required
+                  value={balanceInput}
+                  onChange={(e) => setBalanceInput(e.target.value)}
+                  className="w-full rounded-lg border border-slate-300 bg-white px-3.5 py-2.5 font-mono text-sm tabular-nums text-slate-900 focus:border-emerald-600 focus:outline-none focus:ring-1 focus:ring-emerald-600"
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-3 border-t border-slate-200 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setEditingUser(null)}
+                  disabled={savingBalance}
+                  className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={savingBalance}
+                  className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700 disabled:opacity-50"
+                >
+                  {savingBalance ? 'Saving...' : 'Save Balance'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
       )}
     </div>
   );

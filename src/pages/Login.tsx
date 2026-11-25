@@ -1,25 +1,31 @@
 import React, { useState } from 'react';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
-import { Eye, EyeOff, LogIn } from 'lucide-react';
+import { Eye, EyeOff, LogIn, ShieldCheck, User } from 'lucide-react';
 import { SupabaseConfigBanner } from '../components/SupabaseConfigBanner';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { mapAuthError, supabase } from '../lib/supabase';
 
 export function Login() {
-  const { user, loading: authLoading } = useAuth();
+  const { user, profile, loading: authLoading } = useAuth();
   const { showToast } = useToast();
   const navigate = useNavigate();
 
+  const [adminMode, setAdminMode] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  if (!authLoading && user) {
-    return <Navigate to="/dashboard" replace />;
+  if (!authLoading && !submitting && user) {
+    return <Navigate to={profile?.is_admin ? '/admin' : '/dashboard'} replace />;
   }
+
+  const handleModeSwitch = (isAdmin: boolean) => {
+    setAdminMode(isAdmin);
+    setErrorMessage(null);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,7 +46,7 @@ export function Login() {
 
     setSubmitting(true);
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email: trimmedEmail,
         password,
       });
@@ -49,6 +55,35 @@ export function Login() {
         const friendly = mapAuthError(error.message);
         setErrorMessage(friendly);
         showToast(friendly, 'error');
+        return;
+      }
+
+      if (adminMode && data.user) {
+        const { data: profileData, error: profileError } = await supabase
+          .from('profiles')
+          .select('is_admin')
+          .eq('id', data.user.id)
+          .maybeSingle();
+
+        if (profileError) {
+          await supabase.auth.signOut();
+          const msg = `Unable to verify admin access: ${profileError.message}`;
+          setErrorMessage(msg);
+          showToast(msg, 'error');
+          return;
+        }
+
+        if (!profileData?.is_admin) {
+          await supabase.auth.signOut();
+          const msg =
+            'This account does not have administrator access. Enable is_admin = true for this user in your Supabase profiles table.';
+          setErrorMessage(msg);
+          showToast('Admin access denied for this account.', 'error');
+          return;
+        }
+
+        showToast('Signed in to Admin Panel.', 'success');
+        navigate('/admin');
         return;
       }
 
@@ -78,7 +113,46 @@ export function Login() {
         <SupabaseConfigBanner />
 
         <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-xs sm:p-8">
-          <h1 className="font-display text-xl font-semibold text-slate-900">Sign in</h1>
+          {/* Role Mode Buttons */}
+          <div
+            role="group"
+            aria-label="Sign in role"
+            className="mb-6 grid grid-cols-2 gap-1 rounded-lg border border-slate-200 bg-slate-50 p-1"
+          >
+            <button
+              type="button"
+              onClick={() => handleModeSwitch(false)}
+              className={`inline-flex items-center justify-center gap-2 rounded-md px-3 py-2 text-xs font-semibold transition-colors whitespace-nowrap ${
+                !adminMode
+                  ? 'bg-white text-slate-900 shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <User className="h-3.5 w-3.5" aria-hidden="true" />
+              <span>Member Sign In</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => handleModeSwitch(true)}
+              className={`inline-flex items-center justify-center gap-2 rounded-md px-3 py-2 text-xs font-semibold transition-colors whitespace-nowrap ${
+                adminMode
+                  ? 'bg-white text-emerald-700 shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <ShieldCheck className="h-3.5 w-3.5" aria-hidden="true" />
+              <span>Admin</span>
+            </button>
+          </div>
+
+          <h1 className="font-display text-xl font-semibold text-slate-900">
+            {adminMode ? 'Admin Sign In' : 'Sign in'}
+          </h1>
+          {adminMode && (
+            <p className="mt-1 text-xs leading-relaxed text-slate-500">
+              Sign in with an account where <code className="font-mono text-slate-700">is_admin</code> is enabled in Supabase.
+            </p>
+          )}
 
           {errorMessage && (
             <div
@@ -101,7 +175,7 @@ export function Login() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@example.com"
+                placeholder={adminMode ? 'admin@example.com' : 'you@example.com'}
                 className="w-full rounded-lg border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-emerald-600 focus:outline-none focus:ring-1 focus:ring-emerald-600"
               />
             </div>
@@ -137,17 +211,29 @@ export function Login() {
               disabled={submitting}
               className="flex w-full items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-emerald-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              <LogIn className="h-4 w-4" aria-hidden="true" />
-              <span>{submitting ? 'Signing in...' : 'Sign In'}</span>
+              {adminMode ? (
+                <ShieldCheck className="h-4 w-4" aria-hidden="true" />
+              ) : (
+                <LogIn className="h-4 w-4" aria-hidden="true" />
+              )}
+              <span>
+                {submitting
+                  ? 'Signing in...'
+                  : adminMode
+                  ? 'Sign In to Admin Panel'
+                  : 'Sign In'}
+              </span>
             </button>
           </form>
 
-          <p className="mt-6 border-t border-slate-200 pt-5 text-center text-sm text-slate-600">
-            Don&apos;t have an account?{' '}
-            <Link to="/signup" className="font-medium text-emerald-700 hover:text-emerald-600">
-              Create account
-            </Link>
-          </p>
+          {!adminMode && (
+            <p className="mt-6 border-t border-slate-200 pt-5 text-center text-sm text-slate-600">
+              Don&apos;t have an account?{' '}
+              <Link to="/signup" className="font-medium text-emerald-700 hover:text-emerald-600">
+                Create account
+              </Link>
+            </p>
+          )}
         </div>
       </div>
 
