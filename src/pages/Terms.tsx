@@ -40,7 +40,7 @@ export function Terms() {
             <h2 className="font-display text-base font-semibold text-slate-900">2. Rewards &amp; Cooldowns</h2>
             <p className="text-sm leading-relaxed text-slate-600">
               Ad views are subject to a 60-second cooldown interval. Completing 10 verified ad views
-              credits Rs. 100 to your PaisaPulse wallet balance and resets your cycle counter.
+              credits Rs. 50 to your PaisaPulse wallet balance and resets your cycle counter.
             </p>
           </section>
 

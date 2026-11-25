@@ -19,7 +19,7 @@ import { supabase } from '../lib/supabase';
 import type { Withdrawal } from '../types/database';
 
 const DAILY_AD_TARGET = 10;
-const MILESTONE_REWARD_PKR = 100;
+const MILESTONE_REWARD_PKR = 50;
 const COOLDOWN_SECONDS = 60;
 
 function getRemainingCooldownSeconds(lastAdTime: string | null | undefined): number {
