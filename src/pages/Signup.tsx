@@ -28,7 +28,7 @@ export function Signup() {
     setErrorMessage(null);
 
     if (!supabase) {
-      const msg = 'Supabase is not configured. Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY.';
+      const msg = 'Registration service is currently unavailable. Please try again later.';
       setErrorMessage(msg);
       showToast(msg, 'error');
       return;

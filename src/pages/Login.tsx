@@ -32,7 +32,7 @@ export function Login() {
     setErrorMessage(null);
 
     if (!supabase) {
-      const msg = 'Supabase is not configured. Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY.';
+      const msg = 'Authentication service is currently unavailable. Please try again later.';
       setErrorMessage(msg);
       showToast(msg, 'error');
       return;
@@ -75,8 +75,7 @@ export function Login() {
 
         if (!profileData?.is_admin) {
           await supabase.auth.signOut();
-          const msg =
-            'This account does not have administrator access. Enable is_admin = true for this user in your Supabase profiles table.';
+          const msg = 'This account does not have administrator access.';
           setErrorMessage(msg);
           showToast('Admin access denied for this account.', 'error');
           return;
@@ -150,7 +149,7 @@ export function Login() {
           </h1>
           {adminMode && (
             <p className="mt-1 text-xs leading-relaxed text-slate-500">
-              Sign in with an account where <code className="font-mono text-slate-700">is_admin</code> is enabled in Supabase.
+              Sign in with an authorized administrator account to open the PaisaPulse Admin Panel.
             </p>
           )}
 

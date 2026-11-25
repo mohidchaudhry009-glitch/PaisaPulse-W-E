@@ -49,7 +49,7 @@ export function PrivacyPolicy() {
           <section className="space-y-2">
             <h2 className="font-display text-base font-semibold text-slate-900">3. Data Storage &amp; Security</h2>
             <p className="text-sm leading-relaxed text-slate-600">
-              Authentication and wallet records are stored in Supabase with encrypted transport and
+              Authentication and wallet records are stored securely with encrypted transport and
               role-restricted access controls. You may request account deletion by contacting support.
             </p>
           </section>
