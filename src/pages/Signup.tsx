@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
-import { CheckCircle2, Eye, EyeOff, UserPlus } from 'lucide-react';
+import { CheckCircle2, Eye, EyeOff, Gift, UserPlus } from 'lucide-react';
 import { SupabaseConfigBanner } from '../components/SupabaseConfigBanner';
-import { useAuth } from '../context/AuthContext';
+import { SIGNUP_BONUS_PKR, useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { mapAuthError, supabase } from '../lib/supabase';
 
@@ -19,7 +19,7 @@ export function Signup() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [confirmationSent, setConfirmationSent] = useState(false);
 
-  if (!authLoading && user) {
+  if (!authLoading && !submitting && user) {
     return <Navigate to="/dashboard" replace />;
   }
 
@@ -55,6 +55,11 @@ export function Signup() {
       const { data, error } = await supabase.auth.signUp({
         email: trimmedEmail,
         password,
+        options: {
+          data: {
+            pending_signup_bonus: SIGNUP_BONUS_PKR,
+          },
+        },
       });
 
       if (error) {
@@ -65,11 +70,17 @@ export function Signup() {
       }
 
       if (data.session) {
-        showToast('Account created! Welcome to PaisaPulse.', 'success');
+        showToast(
+          `Account created! Rs. ${SIGNUP_BONUS_PKR} welcome bonus added to your wallet.`,
+          'success'
+        );
         navigate('/dashboard');
       } else {
         setConfirmationSent(true);
-        showToast('Confirmation email sent. Please verify your inbox.', 'info');
+        showToast(
+          `Confirmation email sent. Your Rs. ${SIGNUP_BONUS_PKR} bonus will be credited once verified.`,
+          'info'
+        );
       }
     } catch (err) {
       const msg = err instanceof Error ? mapAuthError(err.message) : 'Sign up failed.';
@@ -88,7 +99,7 @@ export function Signup() {
             PaisaPulse
           </Link>
           <p className="mt-2 text-sm text-slate-600">
-            Create your account to start earning rewards on daily ad milestones.
+            Create your account to receive a Rs. {SIGNUP_BONUS_PKR} welcome bonus and start earning on daily ad milestones.
           </p>
         </div>
 
@@ -103,7 +114,7 @@ export function Signup() {
               <h1 className="font-display text-xl font-semibold text-slate-900">Check your inbox</h1>
               <p className="text-sm leading-relaxed text-slate-600">
                 We sent a confirmation link to <span className="font-medium text-slate-900">{email}</span>.
-                Confirm your email address before signing in.
+                Confirm your email address before signing in to claim your Rs. {SIGNUP_BONUS_PKR} welcome bonus.
               </p>
               <Link
                 to="/login"
@@ -114,7 +125,14 @@ export function Signup() {
             </div>
           ) : (
             <>
-              <h1 className="font-display text-xl font-semibold text-slate-900">Create account</h1>
+              <div className="flex items-center justify-between gap-3">
+                <h1 className="font-display text-xl font-semibold text-slate-900">Create account</h1>
+              </div>
+
+              <div className="mt-4 flex items-center gap-2.5 rounded-lg border border-emerald-200 bg-emerald-50 px-3.5 py-2.5 text-xs font-medium text-emerald-800">
+                <Gift className="h-4 w-4 shrink-0 text-emerald-600" aria-hidden="true" />
+                <span>New member bonus: Rs. {SIGNUP_BONUS_PKR} added directly to your wallet</span>
+              </div>
 
               {errorMessage && (
                 <div
