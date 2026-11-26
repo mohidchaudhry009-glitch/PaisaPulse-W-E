@@ -15,13 +15,8 @@ import { useLayoutActions } from '../components/Layout';
 import { SupabaseConfigBanner } from '../components/SupabaseConfigBanner';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
+import { parseAccountDetails } from '../lib/accountFormat';
 import { supabase } from '../lib/supabase';
-import {
-  initializeUnityAds,
-  isNativeUnityBridgeAvailable,
-  showUnityRewardedAd,
-  UNITY_ADS_CONFIG,
-} from '../lib/unityAds';
 import type { Withdrawal } from '../types/database';
 
 const DAILY_AD_TARGET = 10;
@@ -113,7 +108,6 @@ export function Dashboard() {
 
   useEffect(() => {
     setAdBlockerDetected(runAdblockProbe());
-    initializeUnityAds();
   }, []);
 
   useEffect(() => {
@@ -126,25 +120,12 @@ export function Dashboard() {
     return () => window.clearInterval(interval);
   }, [profile?.last_ad_time]);
 
-  const handleWatchUnityAd = async () => {
+  const playDemoAd = () => {
     if (cooldownLeft > 0 || savingReward) return;
     if (adBlockerDetected || mockAdblockWarning) {
-      showToast('Adblocker notice active — disable adblockers before watching rewarded ads.', 'info');
+      showToast('Adblocker notice active — disable adblockers before watching ads.', 'info');
     }
-
-    try {
-      const outcome = await showUnityRewardedAd();
-      if (outcome === 'completed') {
-        await handleAdComplete();
-      } else if (outcome === 'skipped') {
-        showToast('Rewarded ad was skipped before completion. No reward credited.', 'info');
-      } else {
-        setAdModalOpen(true);
-      }
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Unable to load Unity rewarded ad.';
-      showToast(msg, 'error');
-    }
+    setAdModalOpen(true);
   };
 
   const handleAdComplete = useCallback(async () => {
@@ -271,7 +252,7 @@ export function Dashboard() {
             <div>
               <p className="font-medium text-amber-900">Adblocker detected or simulated</p>
               <p className="mt-0.5 text-xs text-amber-800">
-                Please disable browser adblockers for CashView so Unity rewarded ad impressions register properly.
+                Please disable browser adblockers for CashView so ad impressions register properly.
               </p>
             </div>
           </div>
@@ -364,21 +345,17 @@ export function Dashboard() {
               Daily Milestone Progress
             </h2>
             <p className="text-sm leading-relaxed text-slate-600">
-              Each completed Unity rewarded ad view adds 1 step toward your 10-ad milestone. Reaching 10/10
+              Each completed ad view adds 1 step toward your 10-ad milestone. Reaching 10/10
               automatically credits <span className="font-mono font-semibold text-emerald-700">Rs. {MILESTONE_REWARD_PKR}</span>{' '}
               and resets your counter for the next round.
-            </p>
-            <p className="font-mono text-xs text-slate-500">
-              Placement: {UNITY_ADS_CONFIG.rewardedPlacementId} · Game ID {UNITY_ADS_CONFIG.gameId}
-              {isNativeUnityBridgeAvailable() ? ' · Android Bridge Active' : ' · Web Player Fallback'}
             </p>
           </div>
 
           <button
             type="button"
-            onClick={() => void handleWatchUnityAd()}
+            onClick={playDemoAd}
             disabled={cooldownLeft > 0 || savingReward || loadingInitial || !profile}
-            className="inline-flex min-w-[210px] items-center justify-center gap-2.5 rounded-lg bg-emerald-600 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-emerald-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-500 whitespace-nowrap shrink-0"
+            className="inline-flex min-w-[200px] items-center justify-center gap-2.5 rounded-lg bg-emerald-600 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-emerald-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-500 whitespace-nowrap shrink-0"
           >
             {cooldownLeft > 0 ? (
               <>
@@ -393,7 +370,7 @@ export function Dashboard() {
             ) : (
               <>
                 <Play className="h-4 w-4 fill-current shrink-0" aria-hidden="true" />
-                <span>Watch Rewarded Ad</span>
+                <span>Watch Ad</span>
               </>
             )}
           </button>
@@ -485,7 +462,9 @@ export function Dashboard() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-200">
-                {withdrawals.map((item) => (
+                {withdrawals.map((item) => {
+                  const parsed = parseAccountDetails(item.account_number);
+                  return (
                   <tr key={item.id} className="transition-colors hover:bg-slate-50">
                     <td className="px-6 py-3.5 font-mono text-xs tabular-nums text-slate-500 whitespace-nowrap">
                       {new Date(item.created_at).toLocaleDateString()}
@@ -493,8 +472,13 @@ export function Dashboard() {
                     <td className="px-6 py-3.5 text-slate-800 whitespace-nowrap">
                       {item.payment_method}
                     </td>
-                    <td className="px-6 py-3.5 font-mono text-xs tabular-nums text-slate-600 whitespace-nowrap">
-                      {item.account_number}
+                    <td className="px-6 py-3.5 whitespace-nowrap">
+                      {parsed.accountName && (
+                        <div className="text-xs font-medium text-slate-900">{parsed.accountName}</div>
+                      )}
+                      <div className="font-mono text-xs tabular-nums text-slate-600">
+                        {parsed.accountNumber}
+                      </div>
                     </td>
                     <td className="px-6 py-3.5 text-right font-mono font-medium tabular-nums text-slate-900 whitespace-nowrap">
                       Rs. {item.amount.toLocaleString()}
@@ -518,7 +502,8 @@ export function Dashboard() {
                       )}
                     </td>
                   </tr>
-                ))}
+                  );
+                })}
               </tbody>
             </table>
           </div>

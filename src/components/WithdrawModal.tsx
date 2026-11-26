@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { ArrowUpRight, Wallet, X } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
+import { formatAccountDetails } from '../lib/accountFormat';
 import { supabase } from '../lib/supabase';
 import type { PaymentMethod } from '../types/database';
 
@@ -19,6 +20,7 @@ export function WithdrawModal({ isOpen, onClose, onSuccess }: WithdrawModalProps
 
   const [amountInput, setAmountInput] = useState<string>('500');
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('JazzCash');
+  const [accountName, setAccountName] = useState<string>('');
   const [accountNumber, setAccountNumber] = useState<string>('');
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [formError, setFormError] = useState<string | null>(null);
@@ -68,9 +70,17 @@ export function WithdrawModal({ isOpen, onClose, onSuccess }: WithdrawModalProps
       return;
     }
 
-    const sanitizedAccount = accountNumber.trim();
-    if (sanitizedAccount.length < 10 || sanitizedAccount.length > 20) {
-      const msg = 'Enter a valid JazzCash or Easypaisa account number (10–20 characters).';
+    const sanitizedName = accountName.replace(/\|/g, ' ').replace(/\s+/g, ' ').trim();
+    if (sanitizedName.length < 2 || sanitizedName.length > 60) {
+      const msg = 'Please enter the account holder name (2–60 characters).';
+      setFormError(msg);
+      showToast(msg, 'error');
+      return;
+    }
+
+    const sanitizedNumber = accountNumber.trim();
+    if (sanitizedNumber.length < 10 || sanitizedNumber.length > 20) {
+      const msg = `Enter a valid ${paymentMethod} mobile number (10–20 characters).`;
       setFormError(msg);
       showToast(msg, 'error');
       return;
@@ -100,7 +110,7 @@ export function WithdrawModal({ isOpen, onClose, onSuccess }: WithdrawModalProps
         user_id: profile.id,
         amount: numericAmount,
         payment_method: paymentMethod,
-        account_number: sanitizedAccount,
+        account_number: formatAccountDetails(sanitizedName, sanitizedNumber),
         status: 'pending',
       });
 
@@ -121,7 +131,11 @@ export function WithdrawModal({ isOpen, onClose, onSuccess }: WithdrawModalProps
       });
 
       await refreshProfile();
-      showToast(`Withdrawal of Rs. ${numericAmount.toLocaleString()} submitted via ${paymentMethod}.`, 'success');
+      showToast(
+        `Withdrawal of Rs. ${numericAmount.toLocaleString()} submitted for manual ${paymentMethod} payout.`,
+        'success'
+      );
+      setAccountName('');
       setAccountNumber('');
       onSuccess?.();
       onClose();
@@ -159,7 +173,7 @@ export function WithdrawModal({ isOpen, onClose, onSuccess }: WithdrawModalProps
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-5 p-6">
+        <form onSubmit={handleSubmit} className="space-y-4 p-6">
           <div className="flex items-center justify-between border-b border-slate-200 pb-4">
             <span className="text-sm text-slate-600">Available balance</span>
             <span className="font-mono text-lg font-semibold tabular-nums text-emerald-700">
@@ -212,8 +226,23 @@ export function WithdrawModal({ isOpen, onClose, onSuccess }: WithdrawModalProps
           </div>
 
           <div className="space-y-1.5">
+            <label htmlFor="withdraw-name" className="text-sm font-medium text-slate-800">
+              Account Holder Name
+            </label>
+            <input
+              id="withdraw-name"
+              type="text"
+              required
+              value={accountName}
+              onChange={(e) => setAccountName(e.target.value)}
+              placeholder="e.g. Muhammad Ali"
+              className="w-full rounded-lg border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-emerald-600 focus:outline-none focus:ring-1 focus:ring-emerald-600"
+            />
+          </div>
+
+          <div className="space-y-1.5">
             <label htmlFor="withdraw-account" className="text-sm font-medium text-slate-800">
-              Account Number
+              {paymentMethod} Number
             </label>
             <input
               id="withdraw-account"
@@ -225,7 +254,7 @@ export function WithdrawModal({ isOpen, onClose, onSuccess }: WithdrawModalProps
               className="w-full rounded-lg border border-slate-300 bg-white px-3.5 py-2.5 font-mono text-sm tabular-nums text-slate-900 placeholder:text-slate-400 focus:border-emerald-600 focus:outline-none focus:ring-1 focus:ring-emerald-600"
             />
             <p className="text-xs text-slate-500">
-              Enter your registered {paymentMethod} mobile wallet number.
+              Payouts are sent manually to this {paymentMethod} name and number after verification.
             </p>
           </div>
 
@@ -243,7 +272,7 @@ export function WithdrawModal({ isOpen, onClose, onSuccess }: WithdrawModalProps
               disabled={submitting || currentBalance < MIN_WITHDRAWAL}
               className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-emerald-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              <span>{submitting ? 'Submitting...' : 'Confirm Withdrawal'}</span>
+              <span>{submitting ? 'Submitting...' : 'Submit Request'}</span>
               <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
             </button>
           </div>

@@ -1,6 +1,8 @@
 {
-  "name": "PaisaPulse",
+  "name": "CashView",
   "description": "Watch & Earn rewards SaaS platform with daily ad milestones, cooldown tracking, JazzCash/Easypaisa withdrawals, and an admin console.",
   "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
 }

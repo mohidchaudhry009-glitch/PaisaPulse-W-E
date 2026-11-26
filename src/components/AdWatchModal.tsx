@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
 import { ExternalLink, Film, PlayCircle, ShieldCheck, Volume2, VolumeX, X } from 'lucide-react';
-import { UNITY_ADS_CONFIG } from '../lib/unityAds';
 
 interface AdWatchModalProps {
   isOpen: boolean;
@@ -29,7 +28,7 @@ const AD_SCENES = [
     accent: 'from-emerald-700 to-slate-900',
   },
   {
-    brand: 'Unity Rewarded Placement',
+    brand: 'CashView Verified Session',
     headline: 'Almost Done — Verifying Completion',
     caption: 'Your reward progress is about to be credited automatically.',
     accent: 'from-teal-700 to-emerald-900',
@@ -112,7 +111,7 @@ export function AdWatchModal({
           <div className="flex items-center gap-2.5">
             <Film className="h-4 w-4 text-emerald-600" aria-hidden="true" />
             <h2 id="ad-modal-title" className="font-display text-base font-semibold text-slate-900">
-              Unity Rewarded Ad
+              Watching Ad...
             </h2>
           </div>
 
@@ -137,8 +136,8 @@ export function AdWatchModal({
             className={`relative overflow-hidden rounded-xl bg-gradient-to-br ${currentScene.accent} p-6 text-white shadow-inner transition-colors duration-500`}
           >
             <div className="flex items-center justify-between text-xs text-white/80">
-              <span className="font-mono">
-                {UNITY_ADS_CONFIG.rewardedPlacementId} · {UNITY_ADS_CONFIG.gameId}
+              <span className="font-medium tracking-wide">
+                Sponsored Preview · CashView
               </span>
               <button
                 type="button"
@@ -181,7 +180,7 @@ export function AdWatchModal({
             <div className="flex items-center justify-between text-xs text-slate-500">
               <span>
                 {completed
-                  ? 'Rewarded view verified. Crediting progress...'
+                  ? 'Ad view verified. Crediting progress...'
                   : 'Keep this window open until the 20s timer completes.'}
               </span>
               <span className="font-mono font-medium tabular-nums text-slate-900">
@@ -200,7 +199,7 @@ export function AdWatchModal({
           <div className="flex items-center justify-between border-t border-slate-200 pt-4 text-xs text-slate-500">
             <span className="flex items-center gap-1.5">
               <ShieldCheck className="h-3.5 w-3.5 text-emerald-600" aria-hidden="true" />
-              <span>Unity Ads Rewarded Placement</span>
+              <span>Verified ad playback</span>
             </span>
             <button
               type="button"
